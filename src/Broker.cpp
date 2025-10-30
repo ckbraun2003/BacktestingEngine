@@ -18,9 +18,11 @@ Price Broker::LastPrice() const
   return currentOLHCVBar.close_;
 }
 
-void Broker::Next(const OLHCVBar& currentOLHCVBar))
+void Broker::Next(const OLHCVBar& currentOLHCVBar)
 {
+  ProcessOrders(currentOLHCVBar);
 
+  equity_.push_back(GetCurrentEquity(currentOLHCVBar.close_));
 }
 
 void Broker::NewOrder(Size size)
@@ -31,22 +33,66 @@ void Broker::NewOrder(Size size)
   }
 }
 
-void Broker::ProcessOrders()
+Size Broker::GetPosition() const
 {
-  for (size_t i = 0; i < orders_.size(); )
+  Size size = 0;
+
+  if (trades_.empty())
+    return size;
+
+  for (const auto& trade : trades_)
+    size += trade->GetSize();
+
+  return size;
+}
+
+void Broker::ProcessOrders(const OLHCVBar& currentOLHCVBar)
+{
+  if (orders_.empty())
+    return;
+
+  for (auto it = orders_.begin(); it != orders_.end(); )
   {
-    OrderPointer order = orders_.back();
+    OrderPointer order = *it;
+    Size orderSize = order->GetSize();
+    if (((GetPosition() >= 0) && (orderSize > 0)) || ((GetPosition() <= 0) && (orderSize < 0)))
+    {
+      OpenTrade(currentOLHCVBar.open_, orderSize, currentOLHCVBar.timestamp_);
+    }
+    else
+    {
+      MatchOrders(orderSize, currentOLHCVBar.open_, currentOLHCVBar.timestamp_);
+    }
+    it = orders_.erase(it);
   }
 }
 
-void Broker::CloseTrade(Trade trade, Price price, Time timestamp)
+void Broker::MatchOrders(Size orderSize, Price price, Time timestamp)
 {
+  while (orderSize != 0)
+    for (auto it = trades_.begin(); it != trades_.end(); )
+    {
+      TradePointer currentTrade = *it;
+      Size tradeSize = std::abs(currentTrade->GetSize());
 
+      if (tradeSize <= std::abs(orderSize))
+      {
+        closedTrades_.push_back(std::make_shared<Trade>(currentTrade->FillTrade(price, timestamp)));
+        orderSize += currentTrade->GetSize();
+        it = trades_.erase(it);
+      }
+      else
+      {
+        closedTrades_.push_back(std::make_shared<Trade>(currentTrade->PartiallyFillTrade(orderSize, price, timestamp)));
+        orderSize = 0;
+        ++it;
+      }
+    }
 }
 
 void Broker::OpenTrade(Price price, Size size, Time timestamp)
 {
-
+  trades_.push_back(std::make_shared<Trade>(size, price, timestamp));
 }
 
 Cash Broker::CommissionFunction(Size size, Price price)
@@ -54,15 +100,18 @@ Cash Broker::CommissionFunction(Size size, Price price)
   return 0;
 }
 
-Cash Broker::GetCurrentEquity()
+Cash Broker::GetCurrentEquity(Price price)
 {
-  Cash totalPnL = std::accumulate(
-    trades_.begin(), trades_.end(), 0.0,
-    [](Cash sum, const TradePointer trade) {
-      return sum;
-    }
-  );
-  return 0;
+  Cash cash = cash_;
+
+  if (!trades_.empty())
+    for (const auto& trade : trades_)
+      cash += trade->GetUnrealizedPnL(price);
+  if (!closedTrades_.empty())
+    for (const auto& trade : closedTrades_)
+      cash += trade->GetRealizedPnL();
+
+  return cash;
 }
 
 Price Broker::AdjustedPrice(OptSize size, OptPrice price)

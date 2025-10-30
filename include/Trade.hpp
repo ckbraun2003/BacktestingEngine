@@ -7,14 +7,20 @@
 class Trade
 {
 public:
-  Trade(Size size_, Price entryPrice_, Time entryTime);
+  Trade(Size size, Price entryPrice, Time entryTime, Price exitPrice = 0.0, Time exitTime = std::chrono::system_clock::now());
 
   Size GetSize() const { return size_; }
   Price GetEntryPrice() const { return entryPrice_; }
   Price GetExitPrice() const { return exitPrice_; }
   Time GetEntryTime() const { return entryTime_; }
   Time GetExitTime() const { return exitTime_; }
-  void CloseTrade(BrokerPointer& broker, Size size);
+  Cash GetRealizedPnL() const { return size_ * (exitPrice_ - entryPrice_); }
+  Cash GetUnrealizedPnL(Price currentPrice) const { return size_ * (currentPrice - entryPrice_); }
+
+  bool IsLong() const { return size_ > 0; }
+  bool IsShort() const { return size_ < 0; }
+  Trade FillTrade(Price currentPrice, Time currentTime);
+  Trade PartiallyFillTrade(Size size, Price currentPrice, Time currentTime);
 
 private:
   Size size_;

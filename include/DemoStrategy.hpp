@@ -5,6 +5,6 @@
 class DemoStrategy : public Strategy
 {
 public:
-  void Next() const override;
-  void Initialize() const override;
+  void Next() override;
+  void Initialize() override;
 };

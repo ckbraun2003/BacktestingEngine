@@ -1,11 +1,22 @@
+#include <format>
+
 #include "DemoStrategy.hpp"
 
-void DemoStrategy::Next() const
+void DemoStrategy::Next()
 {
-  std::cout << "DemoStrategy[Next]\n";
+  if (GetPosition() == 0)
+    Buy(1);
+
+  auto& equity = GetEquity();
+  auto currentEquity = GetCash();
+  if (!equity.empty())
+    currentEquity = equity.back();
+
+  auto position = GetPosition();
+
+  std::cout << std::format("Position: {} | Equity: ${}\n", position, currentEquity);
 }
 
-void DemoStrategy::Initialize() const
+void DemoStrategy::Initialize()
 {
-  std::cout << "DemoStrategy[Initialize]\n";
 }

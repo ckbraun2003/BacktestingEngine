@@ -9,12 +9,13 @@ using Price = std::double_t;
 using Quantity = std::uint16_t;
 using Volume = std::uint16_t;
 
-using Size = std::double_t;
+using Size = std::int16_t;
 using Cash = std::double_t;
 using Margin = std::double_t;
 using Leverage = std::double_t;
 
 using OptSize = std::optional<Size>;
 using OptPrice = std::optional<Price>;
+using OptTime = std::optional<Time>;
 
 using Equity = std::vector<Cash>;

@@ -13,8 +13,12 @@ void Backtest::RunBacktest()
 {
   strategy_->Initialize();
 
-  for (size_t i = 1; i < data_.size(); ++i)
+  for (int i = 0; i < data_.size(); ++i)
   {
-    broker_->Next(data_.at(i));
+    if (i != 0)
+      broker_->Next(data_.at(i));
+
+    strategy_->Next();
+
   }
 }
