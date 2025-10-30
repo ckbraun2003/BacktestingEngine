@@ -2,12 +2,12 @@
 
 #include <vector>
 
-#include "Broker.hpp"
+#include "Types.hpp"
 
 class Order
 {
 public:
-  Order(BrokerPointer broker_, Size size_);
+  Order(Size size);
 
   void Cancel();
 
@@ -16,8 +16,8 @@ public:
   bool IsShort() const { return size_ < 0; }
 
 private:
-  BrokerPointer broker_;
   Size size_;
 };
 
-using Orders = std::vector<Order>;
+using OrderPointer = std::shared_ptr<Order>;
+using Orders = std::vector<OrderPointer>;

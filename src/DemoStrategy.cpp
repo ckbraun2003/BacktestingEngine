@@ -1,15 +1,11 @@
 #include "DemoStrategy.hpp"
 
-DemoStrategy::DemoStrategy(const Data& data_)
-  : Strategy(data_)
-{ }
-
 void DemoStrategy::Next() const
 {
-  std::cout << "Next" << std::endl;
+  std::cout << "DemoStrategy[Next]\n";
 }
 
 void DemoStrategy::Initialize() const
 {
-  std::cout << "Initialize" << std::endl;
+  std::cout << "DemoStrategy[Initialize]\n";
 }

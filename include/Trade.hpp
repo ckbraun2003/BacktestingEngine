@@ -2,22 +2,29 @@
 
 #include <vector>
 
-#include "Broker.hpp"
+#include "Types.hpp"
 
 class Trade
 {
 public:
-  Trade(BrokerPointer broker_, Size size_, Price entryPrice_, Time entryTime);
+  Trade(Size size_, Price entryPrice_, Time entryTime);
+
+  Size GetSize() const { return size_; }
+  Price GetEntryPrice() const { return entryPrice_; }
+  Price GetExitPrice() const { return exitPrice_; }
+  Time GetEntryTime() const { return entryTime_; }
+  Time GetExitTime() const { return exitTime_; }
+  void CloseTrade(BrokerPointer& broker, Size size);
 
 private:
-  BrokerPointer broker_;
   Size size_;
   Price entryPrice_;
   Price exitPrice_;
   Time entryTime_;
   Time exitTime_;
 
-  Cash commissions = 0;
+  Cash commissions = 0.0;
 };
 
-using Trades = std::vector<Trade>;
+using TradePointer = std::shared_ptr<Trade>;
+using Trades = std::vector<TradePointer>;

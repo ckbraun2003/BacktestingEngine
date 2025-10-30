@@ -1,15 +1,19 @@
 #pragma once
 
 #include "Strategy.hpp"
-#include "Broker.hpp"
+
 
 class Backtest
 {
 public:
-  Backtest(std::unique_ptr<Strategy> strategy_, const Bars& bars_);
-  void Run() const;
+  Backtest(DataObject data, StrategyPointer strategy, Cash cash, Cash commission, Margin margin, Cash spread, bool tradeOnClose = false);
+
+  void RunBacktest();
 
 private:
-  std::unique_ptr<Strategy> strategy_;
-  Bars bars_;
+
+  DataObject data_;
+  BrokerPointer broker_;
+  StrategyPointer strategy_;
+
 };

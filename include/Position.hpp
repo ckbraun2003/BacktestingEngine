@@ -1,12 +1,10 @@
 #pragma once
 
-#include "Broker.hpp"
+#include "Types.hpp"
 
 class Position
 {
 public:
-  Position(BrokerPointer broker_);
-
   void Close(Size size_);
 
   Size GetSize();

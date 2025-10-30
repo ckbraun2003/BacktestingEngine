@@ -1,20 +1,24 @@
+#pragma once
+
 #include <optional>
 #include <iostream>
+#include <unordered_map>
 
 #include "DataObject.hpp"
 #include "Position.hpp"
 #include "Trade.hpp"
 #include "Order.hpp"
+#include "Types.hpp"
 
 class Broker
 {
 public:
-  Broker(DataObject data_, Cash cash_, Cash commision_, Margin margin_, Cash spread_, bool tradeOnClose_ = false);
+  Broker(DataObject data, Cash cash, Cash commission, Margin margin, Cash spread, bool tradeOnClose = false);
 
-  void Next();
-  void NewOrder(Size size_);
+  void Next(const OLHCVBar& currentOLHCVBar);
+  void NewOrder(Size size);
 
-  Price LastPrice();
+  Price LastPrice() const;
   const Equity& GetEquity() const { return equity_; }
   const Position& GetPosition() const { return position_; }
   const Orders& GetOrders() const { return orders_; }
@@ -27,7 +31,7 @@ private:
 
   DataObject data_;
   Cash cash_;
-  Cash commision_;
+  Cash commission_;
   Cash spread_;
   Margin margin_;
   Leverage leverage_;
@@ -40,12 +44,12 @@ private:
   Trades closedTrades_;
 
   void ProcessOrders();
-  void CloseTrade(Trade trade_, Price price_, Time timestamp_);
-  void OpenTrade(Price price_, Size size_, Time timestamp_);
+  void CloseTrade(Trade trade, Price price, Time timestamp);
+  void OpenTrade(Price price, Size size, Time timestamp);
 
-  Cash ComissionFunction(Size size_, Price price);
+  Cash CommissionFunction(Size size, Price price);
   Cash GetCurrentEquity();
-  Price AdjustedPrice(OptSize size_ = std::nullopt, OptPrice price_ = std::nullopt);
+  Price AdjustedPrice(OptSize size = std::nullopt, OptPrice price = std::nullopt);
 
 };
 

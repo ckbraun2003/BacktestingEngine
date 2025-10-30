@@ -1,9 +1,13 @@
 #include "Strategy.hpp"
 
-
-void Strategy::Buy(Size size_)
+void Strategy::Buy(Size size)
 {
-  assert(((size_ > 0 && size_ < 1) || (std::round(size_) == size_ && size_ >= 1)));
+  if (0 < size < 1 || std::round(size) == (size >= 1))
+    return broker_->NewOrder(size);
+}
 
-  return broker_.new_order(size_);
+void Strategy::Sell(Size size)
+{
+  if (0 < size < 1 || std::round(size) == (size >= 1))
+    return broker_->NewOrder(-size);
 }

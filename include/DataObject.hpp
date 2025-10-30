@@ -1,6 +1,6 @@
 #pragma once
 
-#include <list>
+#include <vector>
 
 #include "Types.hpp"
 
@@ -15,8 +15,4 @@ public:
   Volume volume_;
 };
 
-struct DataObject
-{
-public:
-  std::vector<OLHCVBar> olhcv_data_;
-};
+using DataObject = std::vector<OLHCVBar>;

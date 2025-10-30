@@ -1,12 +1,20 @@
 #include "Backtest.hpp"
 
-Backtest::Backtest(std::unique_ptr<Strategy> strategy_, const Bars& bars_)
-  : strategy_(std::move(strategy_))
-  , bars_{ bars_ }
-{ }
+Backtest::Backtest(DataObject data, StrategyPointer strategy, Cash cash, Cash commission, Margin margin, Cash spread, bool tradeOnClose)
+  : data_{ data }
+  , broker_(std::make_shared<Broker>(data_, cash, commission, margin, spread, tradeOnClose))
+  , strategy_(std::move(strategy))
+{
+  strategy_->SetBroker(broker_);
+  strategy_->SetData(data_);
+}
 
-void Backtest::Run() const
+void Backtest::RunBacktest()
 {
   strategy_->Initialize();
-  strategy_->Next();
+
+  for (size_t i = 1; i < data_.size(); ++i)
+  {
+    broker_->Next(data_.at(i));
+  }
 }

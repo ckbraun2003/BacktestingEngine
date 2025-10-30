@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <vector>
-#include <vector>
 #include <chrono>
 
 using Time = std::chrono::system_clock::time_point;
