@@ -15,7 +15,7 @@ endif()
 project ("BacktestingEngine")
 
 # Add source to this project's executable.
-add_executable (BacktestingEngine "src/mainDemo.cpp"   "src/DataObject.cpp" "src/Backtest.cpp" "src/Strategy.cpp" "src/DemoStrategy.cpp"  "src/Broker.cpp" "src/Order.cpp"  "src/Trade.cpp")
+add_executable (BacktestingEngine "src/mainDemo.cpp"   "src/DataObject.cpp" "src/Backtest.cpp" "src/Strategy.cpp" "src/DemoStrategy.cpp"  "src/Broker.cpp" "src/Order.cpp"  "src/Trade.cpp" "src/Stats.cpp")
 
 # Enable automatic precompiled headers
 target_precompile_headers(BacktestingEngine PRIVATE include/pch.hpp)

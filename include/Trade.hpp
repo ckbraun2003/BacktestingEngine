@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 
 #include "Types.hpp"
 
@@ -10,6 +11,7 @@ public:
   Trade(Size size, Price entryPrice, Time entryTime, Price exitPrice = 0.0, Time exitTime = std::chrono::system_clock::now());
 
   Size GetSize() const { return size_; }
+  Cash GetTradeCost() const { return std::abs(size_ * entryPrice_); }
   Price GetEntryPrice() const { return entryPrice_; }
   Price GetExitPrice() const { return exitPrice_; }
   Time GetEntryTime() const { return entryTime_; }

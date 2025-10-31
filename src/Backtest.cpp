@@ -19,6 +19,11 @@ void Backtest::RunBacktest()
       broker_->Next(data_.at(i));
 
     strategy_->Next();
-
   }
+  backtestStats_ = strategy_->ComputeStatistics();
+}
+
+void Backtest::PrintStats()
+{
+  std::cout << std::format("Final Return [%] : {}\nNumber of Trades : {}", backtestStats_.finalReturns_, backtestStats_.numberOfTrades_);
 }

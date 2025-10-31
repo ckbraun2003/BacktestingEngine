@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Broker.hpp"
+#include "Stats.hpp"
 
 class Strategy
 {
@@ -14,7 +15,7 @@ public:
   void ClosePosition();
   void ReducePosition(Size size);
 
-  const Cash GetCash() const { return broker_->GetCash(); }
+  const Cash GetRemainingCash() const { return broker_->GetRemainingCash(); }
   const Size GetPosition() const { return broker_->GetPosition(); }
   const Equity& GetEquity() const { return broker_->GetEquity(); }
   const Orders& GetOrders() const { return broker_->GetOrders(); }
@@ -23,10 +24,12 @@ public:
 
   void SetBroker(BrokerPointer broker) { broker_ = broker; }
   void SetData(DataObject data) { data_ = data; }
+  Stats ComputeStatistics();
 
   ~Strategy() = default;
 
 private:
+
   BrokerPointer broker_;
   DataObject data_;
 };

@@ -1,10 +1,8 @@
-#include <numeric>
-
 #include "Broker.hpp"
 
 Broker::Broker(DataObject data, Cash cash, Cash commission, Margin margin, Cash spread, bool tradeOnClose)
   : data_{ data }
-  , cash_{ cash }
+  , initialCash_{ cash }
   , commission_{ commission }
   , margin_{ margin }
   , spread_{ spread }
@@ -23,6 +21,7 @@ void Broker::Next(const OLHCVBar& currentOLHCVBar)
   ProcessOrders(currentOLHCVBar);
 
   equity_.push_back(GetCurrentEquity(currentOLHCVBar.close_));
+
 }
 
 void Broker::NewOrder(Size size)
@@ -37,10 +36,10 @@ Size Broker::GetPosition() const
 {
   Size size = 0;
 
-  if (trades_.empty())
+  if (openTrades_.empty())
     return size;
 
-  for (const auto& trade : trades_)
+  for (const auto& trade : openTrades_)
     size += trade->GetSize();
 
   return size;
@@ -55,44 +54,59 @@ void Broker::ProcessOrders(const OLHCVBar& currentOLHCVBar)
   {
     OrderPointer order = *it;
     Size orderSize = order->GetSize();
+
     if (((GetPosition() >= 0) && (orderSize > 0)) || ((GetPosition() <= 0) && (orderSize < 0)))
     {
-      OpenTrade(currentOLHCVBar.open_, orderSize, currentOLHCVBar.timestamp_);
+      if (CanAffordTrade(orderSize, currentOLHCVBar.open_))
+        OpenTrade(currentOLHCVBar.open_, orderSize, currentOLHCVBar.timestamp_);
     }
     else
     {
       MatchOrders(orderSize, currentOLHCVBar.open_, currentOLHCVBar.timestamp_);
     }
+
+    UpdateRemainingCash();
     it = orders_.erase(it);
   }
 }
 
 void Broker::MatchOrders(Size orderSize, Price price, Time timestamp)
 {
-  while (orderSize != 0)
-    for (auto it = trades_.begin(); it != trades_.end(); )
-    {
-      TradePointer currentTrade = *it;
-      Size tradeSize = std::abs(currentTrade->GetSize());
+  Size remainingSize = FillTrades(orderSize, price, timestamp);
+  if (std::abs(remainingSize))
+    OpenTrade(price, remainingSize, timestamp);
 
-      if (tradeSize <= std::abs(orderSize))
-      {
-        closedTrades_.push_back(std::make_shared<Trade>(currentTrade->FillTrade(price, timestamp)));
-        orderSize += currentTrade->GetSize();
-        it = trades_.erase(it);
-      }
+}
+
+Size Broker::FillTrades(Size orderSize, Price price, Time timestamp)
+{
+  for (auto it = openTrades_.begin(); it != openTrades_.end(); )
+  {
+    TradePointer currentTrade = *it;
+    if (std::abs(orderSize) >= std::abs(currentTrade->GetSize()))
+    {
+      closedTrades_.push_back(std::make_shared<Trade>(currentTrade->FillTrade(price, timestamp)));
+
+      if (orderSize > 0)
+        orderSize -= std::abs(currentTrade->GetSize());
       else
-      {
-        closedTrades_.push_back(std::make_shared<Trade>(currentTrade->PartiallyFillTrade(orderSize, price, timestamp)));
-        orderSize = 0;
-        ++it;
-      }
+        orderSize += std::abs(currentTrade->GetSize());
+
+      it = openTrades_.erase(it);
     }
+    else
+    {
+      closedTrades_.push_back(std::make_shared<Trade>(currentTrade->PartiallyFillTrade(orderSize, price, timestamp)));
+      return 0;
+    }
+  }
+  return orderSize;
 }
 
 void Broker::OpenTrade(Price price, Size size, Time timestamp)
 {
-  trades_.push_back(std::make_shared<Trade>(size, price, timestamp));
+  openTrades_.push_back(std::make_shared<Trade>(size, price, timestamp));
+  UpdateRemainingCash();
 }
 
 Cash Broker::CommissionFunction(Size size, Price price)
@@ -102,14 +116,11 @@ Cash Broker::CommissionFunction(Size size, Price price)
 
 Cash Broker::GetCurrentEquity(Price price)
 {
-  Cash cash = cash_;
+  Cash cash = remainingCash_;
 
-  if (!trades_.empty())
-    for (const auto& trade : trades_)
+  if (!openTrades_.empty())
+    for (const auto& trade : openTrades_)
       cash += trade->GetUnrealizedPnL(price);
-  if (!closedTrades_.empty())
-    for (const auto& trade : closedTrades_)
-      cash += trade->GetRealizedPnL();
 
   return cash;
 }
@@ -117,4 +128,13 @@ Cash Broker::GetCurrentEquity(Price price)
 Price Broker::AdjustedPrice(OptSize size, OptPrice price)
 {
   return 0;
+}
+
+void Broker::UpdateRemainingCash()
+{
+  remainingCash_ = initialCash_;
+  for (const auto& trade : openTrades_)
+    remainingCash_ -= GetTradeCost(trade->GetSize(), trade->GetEntryPrice());
+  for (const auto& trade : closedTrades_)
+    remainingCash_ += trade->GetRealizedPnL();
 }

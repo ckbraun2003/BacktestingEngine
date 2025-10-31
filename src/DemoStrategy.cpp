@@ -4,17 +4,23 @@
 
 void DemoStrategy::Next()
 {
-  if (GetPosition() == 0)
-    Buy(1);
+  Equity equity = GetEquity();
+  Cash currentEquity;
 
-  auto& equity = GetEquity();
-  auto currentEquity = GetCash();
   if (!equity.empty())
     currentEquity = equity.back();
+  else
+    currentEquity = GetRemainingCash();
 
+  Cash cash = GetRemainingCash();
   auto position = GetPosition();
 
-  std::cout << std::format("Position: {} | Equity: ${}\n", position, currentEquity);
+  if (position == 9)
+    ClosePosition();
+  else
+    Buy(1);
+
+  std::cout << std::format("Position: {} | Remaining Cash: ${} | Equity: ${}\n", position, cash, currentEquity);
 }
 
 void DemoStrategy::Initialize()

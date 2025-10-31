@@ -20,6 +20,19 @@ void Strategy::ClosePosition()
 void Strategy::ReducePosition(Size size)
 {
   if (broker_->IsLong())
-    return broker_->NewOrder(-size);
-  return broker_->NewOrder(size);
+    return Sell(size);
+  else
+    return Buy(size);
+}
+
+Stats Strategy::ComputeStatistics()
+{
+  Stats backtestStats;
+  auto& equity = broker_->GetEquity();
+  auto& trades = broker_->GetClosedTrades();
+
+  backtestStats.finalReturns_ = (equity.back() - equity.front()) / (equity.front());
+  backtestStats.numberOfTrades_ = trades.size();
+
+  return backtestStats;
 }

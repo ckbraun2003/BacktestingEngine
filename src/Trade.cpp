@@ -1,7 +1,5 @@
 #include "Trade.hpp"
 
-#include <memory>
-
 Trade::Trade(Size size, Price entryPrice, Time entryTime, Price exitPrice, Time exitTime)
   : size_{ size }
   , entryPrice_{ entryPrice }
@@ -20,9 +18,13 @@ Trade Trade::FillTrade(Price currentPrice, Time currentTime)
 Trade Trade::PartiallyFillTrade(Size size, Price currentPrice, Time currentTime)
 {
   if (IsLong())
-    size_ -= size;
+  {
+    size_ -= std::abs(size);
+    return Trade(size, entryPrice_, entryTime_, currentPrice, currentTime);
+  }
   else
-    size_ += size;
-
-  return Trade(size, entryPrice_, entryTime_, currentPrice, currentTime);
+  {
+    size_ += std::abs(size);
+    return Trade(-size, entryPrice_, entryTime_, currentPrice, currentTime);
+  }
 }
