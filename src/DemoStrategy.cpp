@@ -20,7 +20,7 @@ void DemoStrategy::Next()
   else
     Buy(1);
 
-  std::cout << std::format("Position: {} | Remaining Cash: ${} | Equity: ${}\n", position, cash, currentEquity);
+  // std::cout << std::format("Position: {} | Remaining Cash: ${} | Equity: ${}\n", position, cash, currentEquity);
 }
 
 void DemoStrategy::Initialize()

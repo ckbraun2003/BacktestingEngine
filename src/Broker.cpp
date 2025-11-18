@@ -8,7 +8,9 @@ Broker::Broker(DataObject data, Cash cash, Cash commission, Margin margin, Cash 
   , spread_{ spread }
   , tradeOnClose_{ tradeOnClose }
   , leverage_{ (1/margin) }
-{ }
+{
+  equity_.push_back(cash);
+}
 
 Price Broker::LastPrice() const
 {
@@ -55,14 +57,17 @@ void Broker::ProcessOrders(const OLHCVBar& currentOLHCVBar)
     OrderPointer order = *it;
     Size orderSize = order->GetSize();
 
+    Cash currentPrice = currentOLHCVBar.open_;
+    Cash adjustedPrice = SpreadFunction(orderSize, currentPrice);
+
     if (((GetPosition() >= 0) && (orderSize > 0)) || ((GetPosition() <= 0) && (orderSize < 0)))
     {
-      if (CanAffordTrade(orderSize, currentOLHCVBar.open_))
-        OpenTrade(currentOLHCVBar.open_, orderSize, currentOLHCVBar.timestamp_);
+      if (CanAffordTrade(orderSize, adjustedPrice))
+        OpenTrade(adjustedPrice, orderSize, currentOLHCVBar.timestamp_);
     }
     else
     {
-      MatchOrders(orderSize, currentOLHCVBar.open_, currentOLHCVBar.timestamp_);
+      MatchOrders(orderSize, adjustedPrice, currentOLHCVBar.timestamp_);
     }
 
     UpdateRemainingCash();
@@ -111,7 +116,12 @@ void Broker::OpenTrade(Price price, Size size, Time timestamp)
 
 Cash Broker::CommissionFunction(Size size, Price price)
 {
-  return 0;
+  return commission_ + abs(size) * price;
+}
+
+Cash Broker::SpreadFunction(Size size, Price price)
+{
+  return price * (1.0 + std::copysign(spread_, size));
 }
 
 Cash Broker::GetCurrentEquity(Price price)

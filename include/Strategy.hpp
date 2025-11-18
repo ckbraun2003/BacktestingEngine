@@ -24,7 +24,6 @@ public:
 
   void SetBroker(BrokerPointer broker) { broker_ = broker; }
   void SetData(DataObject data) { data_ = data; }
-  Stats ComputeStatistics();
 
   ~Strategy() = default;
 

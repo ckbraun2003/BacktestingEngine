@@ -56,6 +56,7 @@ private:
   bool CanAffordTrade(Size size, Price price) const { return (remainingCash_ >= GetTradeCost(size, price)); }
   Cash GetTradeCost(Size size, Price price) const { return std::abs(size * price); }
   Cash CommissionFunction(Size size, Price price);
+  Cash SpreadFunction(Size size, Price price);
   Cash GetCurrentEquity(Price price);
   Price AdjustedPrice(OptSize size = std::nullopt, OptPrice price = std::nullopt);
 
