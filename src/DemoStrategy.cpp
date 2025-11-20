@@ -15,7 +15,7 @@ void DemoStrategy::Next()
   Cash cash = GetRemainingCash();
   auto position = GetPosition();
 
-  if (position == 9)
+  if (position)
     ClosePosition();
   else
     Buy(1);

@@ -130,7 +130,7 @@ Cash Broker::GetCurrentEquity(Price price)
 
   if (!openTrades_.empty())
     for (const auto& trade : openTrades_)
-      cash += trade->GetUnrealizedPnL(price);
+      cash += (trade->GetCurrentValue(price));
 
   return cash;
 }

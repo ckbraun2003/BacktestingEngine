@@ -18,6 +18,7 @@ public:
   Time GetExitTime() const { return exitTime_; }
   Cash GetRealizedPnL() const { return size_ * (exitPrice_ - entryPrice_); }
   Cash GetUnrealizedPnL(Price currentPrice) const { return size_ * (currentPrice - entryPrice_); }
+  Cash GetCurrentValue(Price currentPrice) const { return GetUnrealizedPnL(currentPrice) + GetEntryPrice(); }
 
   bool IsLong() const { return size_ > 0; }
   bool IsShort() const { return size_ < 0; }

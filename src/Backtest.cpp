@@ -21,6 +21,9 @@ void Backtest::RunBacktest()
 
     strategy_->Next();
   }
+  
+  strategy_->ClosePosition();
+
   statistics_ = ComputeStatistics(broker_->GetClosedTrades(), broker_->GetEquity(), riskFreeRate_, data_);
 }
 
